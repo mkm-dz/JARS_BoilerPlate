@@ -24,6 +24,6 @@
     },
     "scripts": {
         "build": "webpack --env compilationMode=dev",
-        "release": "npm run lint && webpack  --env compilationMode=production"
+        "release": "webpack  --env compilationMode=production"
     }
 }
