@@ -1,11 +1,10 @@
-require('../index.html');
+import * as React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { App } from './components/App';
 
-import { App } from "./components/App";
-
-ReactDOM.render(
-    <App />,
-    document.getElementById("main")
-);
+const container = document.getElementById('main');
+if(container){
+    const root = createRoot(container);
+    root.render(<App />);
+}

@@ -1,13 +1,17 @@
-"compilerOptions": {
-    "outDir": "./dist/",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "target": "es2017",
-    "jsx": "react",
-    "watch": true
-},
-"include": [
-    "./src/**/*"
-]
+{
+    "compilerOptions": {
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": true,
+        "removeComments": true,
+        "strict": true,
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "moduleResolution": "node", // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/24788
+        "target": "es2017",
+        "jsx": "react",
+        "watch": true
+    },
+    "include": [
+        "./src/**/*"
+    ]
 }
