@@ -1,89 +1,82 @@
 const TerserJSPlugin = require('terser-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin');
 
-const config = {
-    mode: "production",
-    entry: "./src/index.tsx",
-    output: {
-        filename: "bundle.js",
-        path: __dirname + "/dist"
-    },
-    resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js", ".json"]
-    },
+const config = (env, argv) => {
+    let result = {
+        mode: "production",
+        entry: {
+            "index": "./src/index.tsx",
+        },
+        output: {
+            filename: "[name]_bundle.js",
+            path: __dirname + "/dist"
+        },
+        resolve: {
+            // Add '.ts' and '.tsx' as resolvable extensions.
+            extensions: [".ts", ".tsx", ".js", ".json"]
+        },
 
-    module: {
-        rules: [
-            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+        module: {
+            rules: [
+                // All '.tsx' files will be processed by ts-loader
+                {
+                    test: /\.tsx?$/,
+                    use: 'ts-loader',
+                    exclude: /node_modules/,
+                },
 
-            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+                // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+                { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
 
-            {
-                test: /\.less$/,
-                use: [{
-                    loader: "style-loader" // creates style nodes from JS strings
-                }, {
-                    loader: "css-loader" // translates CSS into CommonJS
-                }, {
-                    loader: "less-loader" // compiles Less to CSS
-                }]
-            },
-            {
-                test: /\.(woff|woff2|eot|ttf|otf|svg|png)$/,
-                use: [
-                    'file-loader'
-                ]
-            },
+                // CSS
+                {
+                    test: /\.less$/,
+                    use: [{
+                        loader: "style-loader" // creates style nodes from JS strings
+                    }, {
+                        loader: "css-loader" // translates CSS into CommonJS
+                    }, {
+                        loader: "less-loader" // compiles Less to CSS
+                    }]
+                },
 
-            // Copies index.html to dist folder witht the same name. It is needed that entry point requires
-            // index.html so this rule can be triggered:
-            // e.g require('../index.html');
-            { test: /index\.html/, loader: 'file-loader', query: { name: '[name].[ext]' } }
-        ]
-    },
-    plugins: [
-        new TerserJSPlugin({
-            parallel: true,
-            sourceMap: false
-        })
-    ],
+                // Images
+                {
+                    test: /\.(svg|png)$/,
+                    use: [
+                        'file-loader'
+                    ],
+                },
+            ]
+        },
+        plugins: [
+            new TerserJSPlugin({
+                parallel: true
+            })
+        ],
+    }
 
-    // When importing a module whose path matches one of the following, just
-    // assume a corresponding global variable exists and use that instead.
-    // This is important because it allows us to avoid bundling all of our
-    // dependencies, which allows browsers to cache those libraries between builds.
-    externals: {
-        "react": "React",
-        "react-dom": "ReactDOM"
-    },
+    if (env.compilationMode === "dev") {
+        console.log("**** Development mode activated ****");
+        // Enable sourcemaps for debugging webpack's output.
+        result.devtool = "source-map";
+        result.mode = "development";
+
+        // We dont want development code to be minified, so we overwrite that array.
+        result.plugins = [];
+    } else {
+        console.log("**** Production mode activated ****");
+    }
+
+    result.plugins.push(
+        new CopyPlugin({
+            patterns: [
+                { from: 'index.html', to: 'index.html' },
+            ],
+        }),
+    )
+
+    return result;
 };
-
-
-// Check if build is running in production mode,
-// this works with a vs code task that calls this like this:
-//  "-d source-map"
-if (process.argv[2] === "-d source-map") {
-    console.log("Development mode activated");
-    // Enable sourcemaps for debugging webpack's output.
-    config.devtool = "source-map";
-    config.mode = "development";
-
-    // Add more configuration for production here like
-    // Uglify plugin
-    // Offline plugin
-    // Etc,
-
-    config.plugins = [
-        new TerserJSPlugin({
-            parallel: true,
-            sourceMap: true
-        })
-    ]
-}
-else{
-    console.log("Production mode activated");
-}
 
 module.exports = config;
